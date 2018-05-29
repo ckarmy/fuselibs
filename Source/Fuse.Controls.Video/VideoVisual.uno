@@ -155,6 +155,15 @@ namespace Fuse.Controls.VideoImpl
 			Fuse.Triggers.WhileCompleted.SetState(Control, true);
 		}
 
+		void IVideoCallbacks.OnBuffering(double buffer)
+		{
+			debug_log "BUFF: VideoVisual::IVideoCallbacks.OnBuffering = "+buffer;
+			ResetTriggers();
+			((IMediaPlayback)this).Buffer = buffer;
+			OnBufferChanged();
+			//Fuse.Triggers.WhileCompleted.SetState(Control, true);
+		}
+
 		float _volume = 1.0f;
 		float IMediaPlayback.Volume
 		{
@@ -222,6 +231,12 @@ namespace Fuse.Controls.VideoImpl
 			set { _videoService.Position = _videoService.Duration * value; }
 		}
 
+		double IMediaPlayback.Buffer
+		{
+			get { return (_videoService.Buffer); }
+			set { _videoService.Buffer = value;}
+		}
+
 		bool IPlayback.CanStop { get { return true; } }
 		bool IPlayback.CanPause { get { return true; } }
 		bool IPlayback.CanResume { get { return true; } }
@@ -242,6 +257,22 @@ namespace Fuse.Controls.VideoImpl
 			}
 		}
 
+		event ValueChangedHandler<double> IMediaPlayback.BufferChanged
+		{
+			add { BufferChanged += value; }
+			remove { BufferChanged -= value; }
+		}
+
+		event ValueChangedHandler<double> BufferChanged;
+		void OnBufferChanged()
+		{
+			debug_log "BufferChanged "+BufferChanged;
+			if (BufferChanged != null)
+			{
+				var buffer = ((IMediaPlayback)this).Buffer;
+				BufferChanged(this, new ValueChangedArgs<double>(buffer));
+			}
+		}
 		void OnUpdate()
 		{
 			_videoService.Update();
@@ -294,7 +325,6 @@ namespace Fuse.Controls.VideoImpl
 			_sizing.absoluteZoom = Control.AbsoluteZoom;
 			return _sizing.ExpandFillSize(GetSize(), lp);
 		}
-
 
 		float2 GetSize()
 		{

@@ -446,6 +446,13 @@ namespace Fuse.Controls
 			set { if (Playback != null) (Playback as IPlayback).Progress = value; }
 		}
 
+		[UXOriginSetter("SetBuffer")]
+		public new double Buffer
+		{
+			get { return Playback != null ? Playback.Buffer : 0.0; }
+			set { if (Playback != null) Playback.Buffer = value; }
+		}
+
 		/*** The position of the video in seconds */
 		public new double Position
 		{
@@ -459,6 +466,7 @@ namespace Fuse.Controls
 		}
 
 		public event ValueChangedHandler<double> ProgressChanged;
+		public event ValueChangedHandler<double> BufferChanged;
 
 		IMediaPlayback _playback;
 		IMediaPlayback Playback
@@ -467,12 +475,17 @@ namespace Fuse.Controls
 			set
 			{
 				if (_playback != null)
+				{
 					_playback.ProgressChanged -= OnProgressChanged;
-
+					_playback.BufferChanged   -= OnBufferChanged;
+				}
 				_playback = value;
 
 				if (_playback != null)
+				{
 					_playback.ProgressChanged += OnProgressChanged;
+					_playback.BufferChanged   += OnBufferChanged;
+				}
 
 				if (IsRootingCompleted)
 				{
@@ -484,6 +497,7 @@ namespace Fuse.Controls
 		static Selector _positionName = "Position";
 		static Selector _durationName = "Duration";
 		static Selector _progressName = "Progress";
+		static Selector _BufferName = "Buffer";
 
 		void OnProgressChanged(object sender, EventArgs args)
 		{
@@ -494,6 +508,14 @@ namespace Fuse.Controls
 
 			if (ProgressChanged != null)
 				ProgressChanged(this, new ValueChangedArgs<double>(Progress));
+		}
+
+		void OnBufferChanged(object sender, EventArgs args)
+		{
+			debug_log "BUFF: Video.uno = "+Buffer;
+			OnPropertyChanged(_BufferName);
+			if (BufferChanged != null)
+				BufferChanged(this, new ValueChangedArgs<double>(Buffer));
 		}
 
 		internal void OnDurationChanged()
@@ -511,6 +533,14 @@ namespace Fuse.Controls
 			if (origin != this)
 			{
 				Progress = value;
+			}
+		}
+
+		public void SetBuffer(double value, IPropertyListener origin)
+		{
+			if (origin != this)
+			{
+				Buffer = value;
 			}
 		}
 

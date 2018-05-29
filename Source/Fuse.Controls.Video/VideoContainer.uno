@@ -20,6 +20,7 @@ namespace Fuse.Controls.VideoImpl
 
 		float Volume { set; }
 
+		double Buffer { get; set; }
 		double Position { get; set; }
 		double Duration { get;  }
 
@@ -46,6 +47,7 @@ namespace Fuse.Controls.VideoImpl
 		void OnLoading();
 		void OnReady();
 		void OnCompleted();
+		void OnBuffering(double buffer);
 	}
 
 	internal class LoadingClosure : IDisposable
@@ -128,6 +130,13 @@ namespace Fuse.Controls.VideoImpl
 		double IVideoService.Duration
 		{
 			get { return _durationCache; }
+		}
+	
+		double _bufferCache;
+		double IVideoService.Buffer
+		{
+			get { return _bufferCache; }
+			set { _bufferCache = value; }
 		}
 
 		int2 _sizeCache;
@@ -242,6 +251,7 @@ namespace Fuse.Controls.VideoImpl
 			{
 				_player.FrameAvailable -= OnPlayerFrameAvailable;
 				_player.ErrorOccurred -= OnPlayerError;
+				_player.BufferChanged -= OnBuffer;
 				_player.Dispose();
 				_player = null;
 			}
@@ -257,6 +267,7 @@ namespace Fuse.Controls.VideoImpl
 			_player = player;
 			_player.FrameAvailable += OnPlayerFrameAvailable;
 			_player.ErrorOccurred += OnPlayerError;
+			_player.BufferChanged += OnBuffer;
 			_player.Volume = _volume;
 		}
 
@@ -270,6 +281,13 @@ namespace Fuse.Controls.VideoImpl
 
 			if (_autoPlay)
 				Player.Play();
+		}
+		void OnBuffer(object sender, double buffer)
+		{
+			debug_log "BUFF: GraphicsVideoService.OnBuffer = "+buffer;
+			// _durationCache = player.Duration;
+			_bufferCache = buffer;
+			_callbacks.OnBuffering(buffer);
 		}
 
 		void OnLoadingError(Exception e)

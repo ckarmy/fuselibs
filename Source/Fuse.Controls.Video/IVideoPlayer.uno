@@ -18,6 +18,7 @@ namespace Fuse.Controls.VideoImpl
 
 		double Duration { get; }
 		double Position { get; set; }
+		double Buffer { get; set; }
 
 		void Play();
 		void Pause();
@@ -25,14 +26,17 @@ namespace Fuse.Controls.VideoImpl
 
 		event EventHandler FrameAvailable;
 		event EventHandler<Exception> ErrorOccurred;
+		event EventHandler<double> BufferChanged;
 	}
 
 	internal class EmptyVideo : IVideoPlayer
 	{
 		double IVideoPlayer.Duration { get { return 0.0; } }
 		double IVideoPlayer.Position { get { return 0.0; } set { } }
+		double IVideoPlayer.Buffer { get { return 0.0; } set { } }
 		event EventHandler IVideoPlayer.FrameAvailable { add { } remove { } }
 		event EventHandler<Exception> IVideoPlayer.ErrorOccurred { add { } remove { } }
+		event EventHandler<double> IVideoPlayer.BufferChanged { add { } remove { } }
 		float IVideoPlayer.Volume { get { return 0.0f; } set { } }
 		int2 IVideoPlayer.Size { get { return int2(0); } }
 		int IVideoPlayer.RotationDegrees { get { return 0; } }

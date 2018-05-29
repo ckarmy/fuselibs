@@ -36,6 +36,8 @@ namespace Fuse.Controls.VideoImpl.Android
 			void HookEvents()
 			{
 				_videoPlayer.Prepared += OnPrepared;
+				_videoPlayer.Buffering += OnBuffering;
+				_videoPlayer.BufferChanged += OnBuffering;
 				_videoPlayer.Error += OnError;
 			}
 
@@ -56,9 +58,16 @@ namespace Fuse.Controls.VideoImpl.Android
 			void OnError(object sender, string msg)
 			{
 				UnhookEvents();
+				_videoPlayer.Buffering -= OnBuffering;
+				_videoPlayer.BufferChanged -= OnBuffering;
 				_readyToDispose = true;
 				if (!_isCancelled)
 					Reject(new Uno.Exception(msg));
+			}
+
+			void OnBuffering(object sender, double buffer)
+			{
+				debug_log "BUFF: VideoLoader.VideoPromise = "+buffer;
 			}
 
 			bool _readyToDispose = false;
@@ -157,7 +166,9 @@ namespace Fuse.Controls.VideoImpl.Android
 		public event EventHandler Prepared;
 		public event EventHandler Completion;
 		public event EventHandler<string> Error;
-		public event EventHandler<int> Buffering;
+
+		public event EventHandler<double> Buffering;
+		public event EventHandler<double> BufferChanged;
 
 		public event EventHandler FrameAvailable;
 		public event EventHandler<Exception> ErrorOccurred;
@@ -188,6 +199,16 @@ namespace Fuse.Controls.VideoImpl.Android
 			{
 				_volume = Uno.Math.Clamp(value, 0.0f, 1.0f);
 				SetVolume(_handle, _volume, _volume);
+			}
+		}
+
+		double _buffer = 0;
+		public double Buffer
+		{
+			get { return _buffer; }
+			set
+			{
+				_buffer = value;
 			}
 		}
 
@@ -321,7 +342,7 @@ namespace Fuse.Controls.VideoImpl.Android
 			});
 			player.setOnBufferingUpdateListener(new android.media.MediaPlayer.OnBufferingUpdateListener() {
 				public void onBufferingUpdate(android.media.MediaPlayer mp, int percent) {
-					@{Fuse.Controls.VideoImpl.Android.MediaPlayer:Of(_this).OnBuffer(int):Call(percent)};
+					@{Fuse.Controls.VideoImpl.Android.MediaPlayer:Of(_this).OnBuffer(double):Call(percent)};
 				}
 			});
 			player.setSurface(((android.view.Surface)surfaceHandle));
@@ -535,10 +556,14 @@ namespace Fuse.Controls.VideoImpl.Android
 				ErrorOccurred(this, new Exception(msg));
 		}
 
-		void OnBuffer(int percent)
+		void OnBuffer(double percent)
 		{
+			debug_log "BUFF: MediaPlayer class = "+percent;
 			if (Buffering != null)
+			{
 				Buffering(this, percent);
+				BufferChanged(this, percent);
+			}
 		}
 
 		[Foreign(Language.Java)]

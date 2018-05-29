@@ -1,4 +1,6 @@
 using Uno;
+using Uno.UX;
+using Fuse;
 
 namespace Fuse.Triggers
 {
@@ -32,6 +34,8 @@ namespace Fuse.Triggers
 		float Volume { get; set; }
 		double Position { get; set; }
 		double Duration { get; }
+		double Buffer { get;set; }
+		event ValueChangedHandler<double> BufferChanged;
 	}
 	
 }
