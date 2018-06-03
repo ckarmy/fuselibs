@@ -17,6 +17,7 @@ namespace FuseVideoImpl
 	void pause(void * videoState);
 	int updateTexture(void * videoState);
 	void setErrorHandler(void * videoState, uDelegate * errorHandler);
+	void setBufferHandler(void * videoState, uDelegate * bufferHandler);
 	int getRotation(void * videoState);
 
 }

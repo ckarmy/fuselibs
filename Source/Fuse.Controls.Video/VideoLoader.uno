@@ -15,8 +15,10 @@ namespace Fuse.Controls.VideoImpl
 		{
 			if defined(iOS) return Fuse.Controls.VideoImpl.iOS.VideoLoader.Load(url);
 			else if defined(Android) return Fuse.Controls.VideoImpl.Android.VideoLoader.Load(url);
-			else if defined(DOTNET) return Fuse.Controls.VideoImpl.CIL.VideoLoader.Load(url);
-
+			else if defined(DOTNET) {
+				debug_log "DOTNET";
+				return Fuse.Controls.VideoImpl.CIL.VideoLoader.Load(url);
+			}
 			throw new Exception("Video not supported on this platform");
 		}
 

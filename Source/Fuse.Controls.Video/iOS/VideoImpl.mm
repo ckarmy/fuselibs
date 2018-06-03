@@ -21,6 +21,7 @@ namespace FuseVideoImpl
 		CVOpenGLESTextureCacheRef TextureCacheHandle;
 		uDelegate * ErrorHandler;
 		uDelegate * LoadedHandler;
+		uDelegate * bufferHandler;
 		int Width, Height;
 		PresentationSizeObserver * _presentationSizeObserver;
 	};
@@ -29,6 +30,25 @@ namespace FuseVideoImpl
 @implementation PresentationSizeObserver
 	- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 	{
+		AVPlayerItem *playerItem = (AVPlayerItem *)object;
+	
+		if ([keyPath isEqualToString:@"loadedTimeRanges"]) {
+			NSTimeInterval timeInterval = [self availableDuration];
+			NSLog(@"Time Interval:%f",timeInterval);
+			CMTime duration = self.playerItem.duration;
+			CGFloat totalDuration = CMTimeGetSeconds(duration);
+			@{Uno.Action:Of(vs->LoadedHandler):Call()};
+			// [self.videoProgress setProgress:timeInterval / totalDuration animated:YES];
+		}
+
+	if (kTimeRangesKVO == context) {
+		NSArray *timeRanges = (NSArray *)[change objectForKey:NSKeyValueChangeNewKey];
+		if (timeRanges && [timeRanges count]) {
+			CMTimeRange timerange = [[timeRanges objectAtIndex:0] CMTimeRangeValue];
+			NSLog(@" . . . %.5f -> %.5f", CMTimeGetSeconds(timerange.start), CMTimeGetSeconds(CMTimeAdd(timerange.start, timerange.duration)));
+		}
+	}
+
 		FuseVideoImpl::VideoState *vs = (FuseVideoImpl::VideoState *)context;
 		auto size = [[vs->Player currentItem] presentationSize];
 		auto screenScale = [[UIScreen mainScreen] scale];
@@ -156,6 +176,11 @@ namespace FuseVideoImpl
 					vs->_presentationSizeObserver = [[PresentationSizeObserver alloc] init];
 					[vs->Player addObserver: vs->_presentationSizeObserver
 					             forKeyPath: @"currentItem.presentationSize"
+					                options: (NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
+					                context: vs];
+
+					[vs->Player addObserver: vs->_presentationSizeObserver
+					             forKeyPath: @"currentItem.loadedTimeRanges"
 					                options: (NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
 					                context: vs];
 

@@ -184,6 +184,13 @@ namespace Fuse.Controls.VideoImpl
 
 		void IPlayback.Stop()
 		{
+			/*
+				_playbackTarget = PlaybackTarget.Stopped;
+				if (_videoService.IsValid)
+				{
+					_videoService.Stop();
+				}
+			*/
 			_playbackTarget = PlaybackTarget.Stopped;
 			((IPlayback)this).Pause();
 			((IMediaPlayback)this).Position = 0.0;

@@ -17,6 +17,7 @@ namespace Fuse.Controls.VideoImpl
 	{
 		void Play();
 		void Pause();
+		void Stop();
 
 		float Volume { set; }
 
@@ -82,6 +83,7 @@ namespace Fuse.Controls.VideoImpl
 		bool _isDisposed = false;
 		void IDisposable.Dispose()
 		{
+			debug_log "Hey, I'm Disposed !";
 			if (!_isDisposed)
 			{
 				_loaderFuture.Cancel();
@@ -124,6 +126,11 @@ namespace Fuse.Controls.VideoImpl
 		void IVideoService.Pause()
 		{
 			Player.Pause();
+		}
+
+		void IVideoService.Stop()
+		{
+			Player.Stop();
 		}
 
 		double _durationCache;
@@ -241,6 +248,7 @@ namespace Fuse.Controls.VideoImpl
 
 		void IDisposable.Dispose()
 		{
+			debug_log "Hey, I'm Disposed !";
 			Reset();
 			_callbacks = null;
 		}

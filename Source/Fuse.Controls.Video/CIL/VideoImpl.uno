@@ -82,6 +82,7 @@ namespace Fuse.Controls.VideoImpl.CIL
 
 		public static Future<IVideoPlayer> Load(string url)
 		{
+			debug_log "Future<IVideoPlayer> Load";
 			return new VideoPromise(url);
 		}
 
@@ -132,6 +133,17 @@ namespace Fuse.Controls.VideoImpl.CIL
 			set { Fuse.Video.Graphics.CIL.VideoImpl.SetPosition(_handle, value); }
 		}
 
+		double _buffer = 0;
+		public double Buffer
+		{
+			get { return _buffer; }
+			set
+			{
+				_buffer = value;
+			}
+		}
+		public event EventHandler<double> BufferChanged;
+
 		readonly Fuse.Video.Graphics.CIL.VideoHandle _handle;
 
 		public VideoPlayer(Fuse.Video.Graphics.CIL.VideoHandle handle)
@@ -147,6 +159,10 @@ namespace Fuse.Controls.VideoImpl.CIL
 		public void Pause()
 		{
 			Fuse.Video.Graphics.CIL.VideoImpl.Pause(_handle);
+		}
+		public void Stop() 
+		{ 
+
 		}
 
 		texture2D _texture;

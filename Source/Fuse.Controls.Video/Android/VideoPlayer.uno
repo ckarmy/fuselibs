@@ -477,6 +477,10 @@ namespace Fuse.Controls.VideoImpl.Android
 			if (GetDuration(_handle) >= 0)
 				Pause(_handle);
 		}
+		public void Stop()
+		{
+			Stop(_handle);
+		}
 
 		[Foreign(Language.Java)]
 		static void Play(Java.Object handle)
@@ -500,6 +504,13 @@ namespace Fuse.Controls.VideoImpl.Android
 				am.abandonAudioFocus(null);
 				player.pause();
 			}
+		@}
+		
+		[Foreign(Language.Java)]
+		static void Stop(Java.Object handle)
+		@{
+			android.media.MediaPlayer player = (android.media.MediaPlayer)handle;
+			player.stop();
 		@}
 
 		bool _isDisposed = false;

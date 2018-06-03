@@ -22,6 +22,7 @@ namespace Fuse.Video.WPF
 		{
 			var video = new Video(_gl);
 			video.LoadUrl(url, loaded, error);
+            Console.WriteLine("Error SEXX:::");
 			return video;
 		}
 
@@ -29,7 +30,8 @@ namespace Fuse.Video.WPF
 		{
 			var video = new Video(_gl);
 			video.LoadFile(fileName, loaded, error);
-			return video;
+            Console.WriteLine("Error SEXX:::");
+            return video;
 		}
 	}
 
@@ -55,7 +57,6 @@ namespace Fuse.Video.WPF
 
 		void OnMediaOpened(object sender, EventArgs e)
 		{
-			
 		}
 
 		public void LoadUrl(string url, Action loaded, Action<string> error)

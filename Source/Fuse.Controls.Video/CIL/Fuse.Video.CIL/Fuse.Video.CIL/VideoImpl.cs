@@ -41,6 +41,7 @@ namespace Fuse.Video.Graphics.CIL
 			#if CONFIG_MAC
 				return CreateFromUrl ("file://" + path, loaded, error);
 			#else
+			
 				var handle = CreateFromFile(path, loaded, error);
 
 				return new VideoHandle(handle.Video, path);

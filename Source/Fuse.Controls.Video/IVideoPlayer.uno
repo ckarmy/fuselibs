@@ -21,6 +21,7 @@ namespace Fuse.Controls.VideoImpl
 		double Buffer { get; set; }
 
 		void Play();
+		void Stop();
 		void Pause();
 		void Update();
 
@@ -44,6 +45,7 @@ namespace Fuse.Controls.VideoImpl
 		void IDisposable.Dispose() { }
 		void IVideoPlayer.Pause() { }
 		void IVideoPlayer.Play() { }
+		void IVideoPlayer.Stop() { }
 		void IVideoPlayer.Update() { }
 	}
 	

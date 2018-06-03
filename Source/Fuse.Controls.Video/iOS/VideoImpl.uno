@@ -72,6 +72,7 @@ namespace Fuse.Controls.VideoImpl.iOS
 
 		public event EventHandler FrameAvailable;
 		public event EventHandler<Exception> ErrorOccurred;
+		public event EventHandler<double> BufferChanged;
 
 		IntPtr _handle = IntPtr.Zero;
 
@@ -80,6 +81,7 @@ namespace Fuse.Controls.VideoImpl.iOS
 			_handle = VideoPlayerImpl.AllocateVideoState();
 			VideoPlayerImpl.Initialize(_handle, uri, onLoaded, onLoadError);
 			VideoPlayerImpl.SetErrorHandler(_handle, PlayerErrorHandler);
+			VideoPlayerImpl.SetBufferingHandler(_handle, PlayerBuffering);
 		}
 
 		void OnFrameAvailable()
@@ -94,6 +96,13 @@ namespace Fuse.Controls.VideoImpl.iOS
 			var handler = ErrorOccurred;
 			if (handler != null)
 				handler(this, new Exception("Unknown playback error"));
+		}
+
+		void PlayerBuffering(double buffer)
+		{
+			var handler = BufferChanged;
+			if (handler != null)
+				handler(this, Buffer);
 		}
 
 		public void Dispose()
@@ -185,6 +194,11 @@ namespace Fuse.Controls.VideoImpl.iOS
 		@}
 
 		public static void SetErrorHandler(Uno.IntPtr videoState, Uno.Action errorHandler)
+		@{
+			::FuseVideoImpl::setErrorHandler($0, $1);
+		@}
+
+		public static void BufferUpdate(Uno.IntPtr videoState, Uno.Action<double> bufferActon)
 		@{
 			::FuseVideoImpl::setErrorHandler($0, $1);
 		@}
