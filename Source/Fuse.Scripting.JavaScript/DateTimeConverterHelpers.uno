@@ -21,7 +21,15 @@ namespace Fuse.Scripting.JavaScript
 
 			return new DateTime(dotNetTicks, DateTimeKind.Utc);
 		}
-
+		public static bool isDate(Scripting.Object date)
+		{
+			for (int i=0; i<date.Keys.Length;i++)
+			{
+				if (date.Keys[i]=="getTime")
+					return true;
+			}
+			return false;
+		}
 		public static object ConvertDateTimeToJSDate(Scripting.Context context, DateTime dt, Scripting.Function dateCtor)
 		{
 			// TODO: This assumes dt's `Kind` is set to `Utc`. The `Ticks` value may have to be adjusted if `Kind` is `Local` or `Unspecified`.

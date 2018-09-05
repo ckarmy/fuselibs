@@ -58,6 +58,16 @@ namespace Fuse.Scripting.JavaScript
 
 				if (obj is Scripting.Object)
 				{
+					if(DateTimeConverterHelpers.isDate((Scripting.Object)obj))
+					{
+						try{
+							var date = DateTimeConverterHelpers.ConvertDateToDateTime(context,(Scripting.Object)obj);
+							return date;
+						}
+						catch(){
+
+						}
+					}
 					var so = (Scripting.Object)obj;
 					var k = new TreeObject(so);
 					_reflections.Add(id, k); // Important to add to dictionary *before* calling Set
