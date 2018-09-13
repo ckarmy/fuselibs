@@ -24,6 +24,8 @@ namespace Fuse
 
 		public UnhandledExceptionArgs(Exception e)
 		{
+			debug_log "Unhandled Exception ";
+			debug_log "Unhandled Exception "+e.StackTrace;
 			Exception = e;
 		}
 	}
@@ -158,6 +160,7 @@ namespace Fuse
 		{
 			//don't use Fuse.Diagnostics.UnknownException, that assumes a sane error path, but
 			//at this point we don't have one anymore and thus Diagnostics may not be able to report correctly
+			debug_log "Exception: "+e.ToString();
 			Uno.Diagnostics.Debug.Log(e.ToString(), Uno.Diagnostics.DebugMessageType.Error);
 			if (UnhandledException != null)
 			{
@@ -173,6 +176,7 @@ namespace Fuse
 
 		internal static void OnUnhandledExceptionInternal(Exception e)
 		{
+			debug_log "Exception: "+e.ToString();
 			var app = Current;
 			if (app != null) app.OnUnhandledException(e);
 		}
