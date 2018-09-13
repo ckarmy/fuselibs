@@ -44,7 +44,7 @@ namespace Fuse.FileSystem
 	{
 		static readonly FileSystemModule _instance;
 		readonly FileSystemOperations _operations = new FileSystemOperations(); // TODO: Find out if we can use SyncDispatcher here
-
+		
 		public FileSystemModule()
 		{
 			if (_instance != null) return;
@@ -58,6 +58,7 @@ namespace Fuse.FileSystem
 			if defined(Android)
 			{
 				AddMember(new NativeProperty<Dictionary<string, string>, Scripting.Object>("androidPaths", GetAndroidPaths, null, ToScriptingObject));
+				AddMember(new NativePromise<AndroidPathsWarpper, Scripting.Object>("androidPathsAsync", GetAndroidPathsAsync, ConvertPathData));
 			}
 			if defined(iOS)
 			{
@@ -299,8 +300,18 @@ namespace Fuse.FileSystem
 			{
 				throw new NotSupportedException("Android-specific paths are not supported on other platforms");
 			}
+		}	
+		
+		Future<AndroidPathsWarpper> GetAndroidPathsAsync(object[] args)
+		{
+			if defined(Android)
+			{
+				return AndroidPaths.GetPathDictionaryAsync();
+			}
+			else{
+				return new Promise<AndroidPathsWarpper>();
+			}
 		}
-
 
 		/**
 			@scriptproperty cacheDirectory
@@ -963,6 +974,17 @@ namespace Fuse.FileSystem
 		{
 			var jsobj = context.NewObject();
 			foreach (var kvp in dict)
+			{
+				jsobj[kvp.Key] = kvp.Value;
+			}
+			return jsobj;
+		}
+
+		private static Fuse.Scripting.Object ConvertPathData(Context context, AndroidPathsWarpper dict)
+		{
+			var jsobj = context.NewObject();
+			var data = (Dictionary<string, string>)dict.getData();
+			foreach (var kvp in data)
 			{
 				jsobj[kvp.Key] = kvp.Value;
 			}

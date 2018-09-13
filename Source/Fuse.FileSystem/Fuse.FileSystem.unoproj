@@ -10,6 +10,7 @@
   ],
   "Packages": [
     "Uno.Threading",
+    "Uno.Permissions",    
     "Uno.Collections"
   ],
   "Projects": [
