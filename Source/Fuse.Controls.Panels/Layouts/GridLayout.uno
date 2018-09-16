@@ -280,6 +280,19 @@ namespace Fuse.Layouts
 				Changed();
 			}
 		}
+		FlowDirection _flowDirection = FlowDirection.LeftToRight;
+		public FlowDirection FlowDirection
+		{
+			get { return _flowDirection; }
+			set
+			{
+				if (_flowDirection != value)
+				{
+					_flowDirection = value;
+					InvalidateLayout();
+				}
+			}
+		}
 
 		GridChildOrder _childOrder = GridChildOrder.RowMajor;
 		public GridChildOrder ChildOrder
@@ -590,7 +603,7 @@ namespace Fuse.Layouts
 						}
 					}
 				}
-					
+
 				elm.Properties.Set(_actualRowProperty, rowAt);
 				elm.Properties.Set(_actualColumnProperty, colAt);
 				
@@ -1092,7 +1105,17 @@ namespace Fuse.Layouts
 
 				if (column >= 0 && column < _columns.Count)
 				{
-					var c = _columns[column];
+					int currentColumn = 0;
+					if (FlowDirection == FlowDirection.RightToLeft)
+					{
+						currentColumn = _columns.Count - column - 1;
+					}
+					else
+					{
+						currentColumn = column;
+
+					}
+					var c = _columns[currentColumn];
 					x = c.ActualOffset;
 					w = c.ActualExtent;
 

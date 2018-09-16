@@ -317,6 +317,12 @@ namespace Fuse.Controls
 		{
 			Layout = _gridLayout = new GridLayout();
 		}
+
+		public FlowDirection FlowDirection
+		{
+			get { return _gridLayout.FlowDirection; }
+			set { _gridLayout.FlowDirection = value; }
+		}
 		
 		
 	}
