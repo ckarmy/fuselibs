@@ -1088,6 +1088,18 @@ namespace Fuse.Layouts
 			
 			var effectiveCellSpacing = EffectiveCellSpacing;
 			var nlp = lp.CloneAndDerive();
+			int i = 0;
+
+			if (_flowDirection == FlowDirection.RightToLeft)
+			{
+				for (var child = container.FirstChild<Visual>(); child != null; child = child.NextSibling<Visual>())
+				{
+					int currentColumnLocation = GetActualColumn(child);
+					child.Properties.Set(_actualColumnProperty, _columns.Count -1 - currentColumnLocation);
+				}
+			}
+			float2 lastPlacement=float2(-1,-1);
+
 			for (var child = container.FirstChild<Visual>(); child != null; child = child.NextSibling<Visual>())
 			{
 				if (ArrangeMarginBoxSpecial(child, padding, lp))
@@ -1102,26 +1114,29 @@ namespace Fuse.Layouts
 				float y = 0;
 				float w = remainSize.X;
 				float h = remainSize.Y;
-
+			
 				if (column >= 0 && column < _columns.Count)
 				{
-					int currentColumn = 0;
-					if (FlowDirection == FlowDirection.RightToLeft)
+					if (_flowDirection == FlowDirection.RightToLeft)
 					{
-						currentColumn = _columns.Count - column - 1;
+						var c = _columns[_columns.Count - 1 - column];
+						x = c.ActualOffset;
+						w = c.ActualExtent;
+						for (int s = column + 1; s < Math.Min(_columns.Count, column + columnSpan); ++s)
+						{
+							w += _columns[_columns.Count - 1 - s].ActualExtent + effectiveCellSpacing;
+						}
 					}
 					else
 					{
-						currentColumn = column;
+						var c = _columns[column];
+						x = c.ActualOffset;
+						w = c.ActualExtent;
+						for (int s = column + 1; s < Math.Min(_columns.Count, column + columnSpan); ++s)
+						{
+							w += _columns[s].ActualExtent + effectiveCellSpacing;
+						}
 
-					}
-					var c = _columns[currentColumn];
-					x = c.ActualOffset;
-					w = c.ActualExtent;
-
-					for (int s = column + 1; s < Math.Min(_columns.Count, column + columnSpan); ++s)
-					{
-						w += _columns[s].ActualExtent + effectiveCellSpacing;
 					}
 				}
 
@@ -1138,7 +1153,23 @@ namespace Fuse.Layouts
 				}
 
 				nlp.SetSize(float2(w,h));
-				child.ArrangeMarginBox(off + float2(x, y), nlp);
+				if (_flowDirection == FlowDirection.RightToLeft)
+				{
+					if (lastPlacement == float2(-1,-1))
+					{
+						lastPlacement = float2(remainSize.X,y);
+						lastPlacement = lastPlacement -float2(w,0);
+					}
+					else
+					{
+						lastPlacement = lastPlacement-float2(w,0);
+					}
+
+				}
+				else{
+					lastPlacement = float2(x, y);
+				}
+				child.ArrangeMarginBox(off + lastPlacement, nlp);
 			}
 		}
 		
