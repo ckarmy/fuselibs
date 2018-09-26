@@ -204,8 +204,8 @@ namespace Fuse.Navigation
 		static public RouterPageRoute ParseFlatRoute(object[] args, int pos = 0)
 		{
 			if (args.Length <= pos) return null;
-			
 			var path = args[pos] as string;
+			debug_log 	"ParseFlatRoute : "+path;
 			if (path != null)
 			{
 				if (args.Length <= pos+1) return new RouterPageRoute(
@@ -221,6 +221,7 @@ namespace Fuse.Navigation
 			}
 			else
 			{
+			debug_log 	"ParseFlatRoute #2: "+args[pos];
 				return new RouterPageRoute(
 					new RouterPage( PagesMap.GetObjectPath(args[pos]), null, args[pos] ), 
 						ParseFlatRoute(args, pos+1));

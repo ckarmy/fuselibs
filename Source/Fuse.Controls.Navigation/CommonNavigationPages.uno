@@ -100,6 +100,7 @@ namespace Fuse.Controls
 			for (int i=0; i < _pagesMap.Count; ++i)
 			{
 				var mp = _pagesMap[i];
+				debug_log mp;
 				//already completed
 				if (mp.Template != null && mp.Visual != null)
 				{
@@ -114,6 +115,7 @@ namespace Fuse.Controls
 				}
 					
 				mp.Template = Fuse.Navigation.PagesMap.GetObjectPath( mp.Data );
+				debug_log mp.Template;
 				if (mp.Template == null)
 				{
 					Fuse.Diagnostics.UserError( "Model is missing a $template or $page property", this);
@@ -121,6 +123,7 @@ namespace Fuse.Controls
 				}
 
 				var f = _parent.FindTemplate(mp.Template);
+				debug_log f;
 				if (f == null)
 				{
 					Fuse.Diagnostics.UserError( "No matching template path: " + mp.Template, this );
@@ -137,6 +140,7 @@ namespace Fuse.Controls
 					}
 				}
 
+				debug_log "OK";
 				mp.Page = new RouterPage( mp.Template, null, mp.Data );
 				PageData.GetOrCreate(mp.Visual).AttachRouterPage( mp.Page );
 				visualCount++;

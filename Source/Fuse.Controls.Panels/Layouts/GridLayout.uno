@@ -1153,15 +1153,21 @@ namespace Fuse.Layouts
 				}
 
 				nlp.SetSize(float2(w,h));
+						debug_log "Column: "+column;
 				if (_flowDirection == FlowDirection.RightToLeft)
 				{
-					if (lastPlacement == float2(-1,-1))
+					if (column == _columns.Count -1 )
 					{
-						lastPlacement = float2(remainSize.X,y);
-						lastPlacement = lastPlacement -float2(w,0);
+						debug_log "NEW ROW "+row;
+						debug_log "Size "+float2(x,y);
+						debug_log "remainSize "+remainSize;
+						lastPlacement = float2(remainSize.X - w,y);
+						debug_log String.Format(" Element #{0} : {1}",row,lastPlacement);
+						// lastPlacement.X = lastPlacement.X - w;
 					}
 					else
 					{
+						lastPlacement.Y = y;
 						lastPlacement = lastPlacement-float2(w,0);
 					}
 
@@ -1169,6 +1175,7 @@ namespace Fuse.Layouts
 				else{
 					lastPlacement = float2(x, y);
 				}
+				debug_log String.Format(" Element #{0} : {1}",row,lastPlacement);
 				child.ArrangeMarginBox(off + lastPlacement, nlp);
 			}
 		}
