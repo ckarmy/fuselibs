@@ -154,7 +154,7 @@ namespace Fuse.Controls
 					ColumnCount = _gridContainer.ColumnCount;
 				}
 			}
-			debug_log "ColumnCount : "+ColumnCount;
+			// debug_log "ColumnCount : "+ColumnCount;
 			
 			if (_scrollable.LayoutMode == ScrollViewLayoutMode.PreserveScrollPosition) 
 			{
@@ -170,6 +170,7 @@ namespace Fuse.Controls
 		
 		protected override void OnUnrooted()
 		{
+			// debug_log "OnUnrooted";
 			if (_scrollable != null)
 			{
 				_scrollable.RemovePropertyListener(this);
@@ -186,11 +187,13 @@ namespace Fuse.Controls
 
 			if (prop == ScrollView.ScrollPositionName)
 			{
+				// debug_log "RequestCheckPosition";
 				RequestCheckPosition();
 				_lastActivityPosition = UpdateManager.FrameIndex;
 			}
 			else if (prop == ScrollView.SizingChanged)
 			{
+				// debug_log "RequestCheckSizing";
 				RequestCheckSizing();
 				_lastActivitySizing = UpdateManager.FrameIndex;
 			}
@@ -200,8 +203,11 @@ namespace Fuse.Controls
 		bool _pendingPosition;
 		void RequestCheckPosition() 
 		{
+			// debug_log "_pendingPosition"+_pendingPosition;
+			// debug_log "_pendingSizing"+_pendingSizing;
 			if (!_pendingPosition && !_pendingSizing)
 			{
+				// debug_log "UpdateManager.AddDeferredAction(CheckPosition);";
 				UpdateManager.AddDeferredAction(CheckPosition);
 				_pendingPosition = true;
 			}
@@ -252,8 +258,11 @@ namespace Fuse.Controls
 		
 		bool _nearTrueEnd;
 		bool _nearTrueStart;
+
 		void CheckPosition()
 		{
+			// debug_log "_pendingSizing "+_pendingSizing;
+			// debug_log "_scrollable "+_scrollable;
 			if (_pendingSizing || _scrollable == null)
 				return;
 			_lastActivityPosition = UpdateManager.FrameIndex;
@@ -263,6 +272,9 @@ namespace Fuse.Controls
 				_scrollable.ActualSize) < EndRange;
 			var nearStart = _scrollable.ToScalarPosition( (_scrollable.ScrollPosition - _scrollable.MinScroll) /
 				_scrollable.ActualSize) < EndRange;
+			// debug_log "nearEnd : "+nearEnd;
+			// debug_log "EndRange : "+EndRange;
+			// debug_log "_scrollable.ToScalarPosition( (_scrollable.MaxScroll - _scrollable.ScrollPosition) /	_scrollable.ActualSize) : "+EndRange;
 
 			var nearTrueEnd = false;
 			var nearTrueStart = false;
@@ -357,11 +369,14 @@ namespace Fuse.Controls
 				//only check once the sizing is done to prevent needless event calls while still doing layout
 				//of several items.
 				CheckPosition();
+				// debug_log "CheckPosition(); again ;)";
 				return;
 			}
 
 			//force a check next frame in the odd case the size doesn't actually change
+			// debug_log "force a check next frame in the odd case the size doesn't actually change";
 			_pendingSizing = true;
+			// UpdateManager.PerformNextFrame(CheckPosition);
 			UpdateManager.PerformNextFrame(CheckSizing);
 		}
 		
