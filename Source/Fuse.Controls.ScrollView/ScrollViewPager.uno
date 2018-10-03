@@ -69,7 +69,39 @@ namespace Fuse.Controls
 				_endRange = value;
 			}
 		}
+
+		int _columnCount = 1;
+		/**
+			An optional attribute that will maintain the layout in-case of using Grids or any layout seems to be columns.
+		*/
+		public int ColumnCount
+		{
+			get { return _columnCount; }
+			set
+			{
+				if (_columnCount == value)
+				return;
+				
+				_columnCount = value;
+			}
+		}
 		
+		int _MaxItemsSize = 18;
+		/**
+			An optional attribute that will maintain the layout in-case of using Grids or any layout seems to be columns.
+		*/
+		public int MaxItemsSize
+		{
+			get { return _MaxItemsSize; }
+			set
+			{
+				if (_MaxItemsSize == value)
+				return;
+				
+				_MaxItemsSize = value;
+			}
+		}
+
 		Each _each;
 		/**
 			The `Each` instance to control. This property is required.
@@ -100,8 +132,30 @@ namespace Fuse.Controls
 				Fuse.Diagnostics.UserError( "Could not find a Scrollable control.", this );
 				return;
 			}
+
+			/*
+				Search for the parent type, if it is Grid then we have to get Grid Size from it and assign it to ColumnCount value 
+				TODO : @ColumnLayout and @GridLayout support !
+			*/
 			
-			//this mode won't work correctly, emit a warning with a suitable one
+			Grid _gridContainer = Each.Parent as Grid;
+			if (_gridContainer != null)
+			{	
+				if(_gridContainer.Columns != "")
+				{
+					var _column_data = _gridContainer.Columns.Split(',');
+					if (_column_data.Length > 1)
+					{
+						ColumnCount = _column_data.Length;
+					}
+				}
+				else if (_gridContainer.ColumnCount > 1)
+				{
+					ColumnCount = _gridContainer.ColumnCount;
+				}
+			}
+			debug_log "ColumnCount : "+ColumnCount;
+			
 			if (_scrollable.LayoutMode == ScrollViewLayoutMode.PreserveScrollPosition) 
 			{
 				Fuse.Diagnostics.UserError( "The ScrollView should have `LayoutMode=\"PreserveVisual\"` for paging to work correctly", this );
@@ -226,7 +280,7 @@ namespace Fuse.Controls
 				var count = Each.DataCount;
 				
 				if (offset + limit < count)
-					Each.Offset = offset + 1;
+					Each.Offset = offset + ColumnCount;
 				else
 					nearTrueEnd = true;
 			}
@@ -234,7 +288,7 @@ namespace Fuse.Controls
 			{
 				var offset = Each.Offset;
 				if (offset > 0)
-					Each.Offset = offset - 1;
+					Each.Offset = offset - ColumnCount;
 				else
 					nearTrueStart = true;
 			}
@@ -276,7 +330,9 @@ namespace Fuse.Controls
 				
 				if (offset + limit < count)
 				{
-					Each.Limit = limit + 1;
+					Each.Limit = limit + ColumnCount;
+					if(Each.Limit > MaxItemsSize)
+						Each.Limit = MaxItemsSize;
 					changed = true;
 				}
 			}
@@ -289,7 +345,9 @@ namespace Fuse.Controls
 				
 				if (limit > 1)
 				{
-					Each.Limit = limit - 1;
+					Each.Limit = limit - ColumnCount;
+					if(Each.Limit > MaxItemsSize)
+						Each.Limit = MaxItemsSize;
 					changed = true;
 				}
 			}

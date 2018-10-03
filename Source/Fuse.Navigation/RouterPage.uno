@@ -31,7 +31,6 @@ namespace Fuse.Navigation
 			Path = path;
 			Parameter = parameter;
 			Context = context;
-			debug_log "RouterPage : "+this.ToString();
 		}
 		
 		/**
@@ -106,21 +105,17 @@ namespace Fuse.Navigation
 	{
 		static public string GetObjectPath( object data )
 		{
-			debug_log "GetObjectPath : "+ data;
 			string path = null;
 			var obj = data as IObject;
 			if (obj != null && obj.ContainsKey("$__fuse_classname")) //set implicitly by Model API
 			{
 				path = Marshal.ToType<string>(obj["$__fuse_classname"]);
-				debug_log "$__fuse_classname : "+ obj["$__fuse_classname"];
 
 			}
 			if (obj != null && obj.ContainsKey("$path"))
 			{	
 				path = Marshal.ToType<string>(obj["$path"]);
-				debug_log "$path : "+ obj["$path"];
 			}
-			debug_log "path : "+path;
 			return path;
 		}
 		
@@ -136,7 +131,6 @@ namespace Fuse.Navigation
 		
 		protected override RouterPage Map(object v)
 		{
-			debug_log "RouterPage Map : "+ v;
 			return new RouterPage( GetObjectPath(v), null, v );
 		}
 		
