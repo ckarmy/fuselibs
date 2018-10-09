@@ -73,7 +73,7 @@ namespace Fuse.CameraRoll
 		static Java.Object CreateIntent()
 		@{
 			Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-			intent.setType("image/*");
+			intent.setType("*/*");
 			return intent;
 		@}
 
