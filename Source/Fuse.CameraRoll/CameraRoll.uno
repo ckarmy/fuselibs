@@ -108,6 +108,8 @@ namespace Fuse.CameraRoll
 			var p = new Promise<Image>();
 			if defined(Android)
 				AndroidCameraRoll.SelectFile(p);
+			else if defined(iOS)
+				iOSCameraRoll.SelectPicture(p);
 			return p;
 		}
 
