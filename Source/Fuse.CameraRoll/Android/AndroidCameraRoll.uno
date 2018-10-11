@@ -102,6 +102,51 @@ namespace Fuse.CameraRoll
 			_closure.OnFail(e.Message);
 		}
 	}
+	
+	[ForeignInclude(Language.Java, "android.provider.MediaStore", "com.fuse.Activity", "android.content.Intent", "com.fusetools.camera.Image", "com.fusetools.camera.ImageStorageTools")]
+	extern (Android) class SelectFilePermissionCheckCommand
+	{
+		SelectPictureClosure _closure;
+		public SelectFilePermissionCheckCommand(Promise<Image> p)
+		{
+			_closure = new SelectPictureClosure(p);
+		}
+
+
+		[Foreign(Language.Java)]
+		static Java.Object CreateIntent()
+		@{
+			Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+			intent.addCategory(Intent.CATEGORY_OPENABLE);
+			intent.setType("*/*");
+			return intent;
+		@}
+
+		public void Execute()
+		{
+			Permissions.Request(new PlatformPermission[] { Permissions.Android.WRITE_EXTERNAL_STORAGE, Permissions.Android.READ_EXTERNAL_STORAGE }).Then(OnPermissions, OnRejected);
+		}
+
+		void OnPermissions(PlatformPermission[] grantedPermissions)
+		{
+			if(grantedPermissions.Length == 2)
+			{
+				var intent = CreateIntent();
+				if(intent==null){
+					throw new Exception("Couldn't create valid intent");
+				}
+				ActivityUtils.StartActivity(intent, _closure.OnActivityResult);
+			}else{
+				_closure.OnFail("Required permission was not granted.");
+			}
+
+		}
+
+		void OnRejected(Exception e)
+		{
+			_closure.OnFail(e.Message);
+		}
+	}
 
 	[ForeignInclude(Language.Java, "android.provider.MediaStore", "com.fuse.Activity", "android.content.Intent", "com.fusetools.camera.Image", "com.fusetools.camera.ImageStorageTools")]
 	extern (Android) class AddPicturePermissionCheckCommand
@@ -159,6 +204,11 @@ namespace Fuse.CameraRoll
 		internal static void SelectPicture(Promise<Image> p)
 		{
 			new SelectPicturePermissionCheckCommand(p).Execute();
+		}
+
+		internal static void SelectFile(Promise<Image> p)
+		{
+			new SelectFilePermissionCheckCommand(p).Execute();
 		}
 
 		internal static Future<bool> AddToCameraRoll(Image photo)

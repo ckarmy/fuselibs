@@ -11,6 +11,7 @@ namespace Fuse.Share
 					"java.io.FileOutputStream",
 					"android.net.Uri",
 					"android.content.Intent",
+					"android.support.v4.content.FileProvider",
 					"android.content.Context")]
 	public extern(Android) class AndroidShareImpl
 	{
@@ -30,7 +31,11 @@ namespace Fuse.Share
 			Context context = com.fuse.Activity.getRootActivity();
 			Intent shareIntent = new Intent();
 			shareIntent.setAction(Intent.ACTION_SEND);
-			Uri uri = Uri.parse(path);
+			File f = new File(path.replace("file:///",""));
+			Uri uri = FileProvider.getUriForFile(
+								context, 
+								context.getApplicationContext()
+								.getPackageName() + ".fileprovider", f);
 			shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
 			shareIntent.setType(mimeType);
 			context.startActivity(Intent.createChooser(shareIntent, description));

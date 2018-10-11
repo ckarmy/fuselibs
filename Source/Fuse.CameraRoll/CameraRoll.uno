@@ -57,6 +57,7 @@ namespace Fuse.CameraRoll
 			Resource.SetGlobalKey(_instance = this, "FuseJS/CameraRoll");
 			AddMember(new NativePromise<Image, Scripting.Object>("getImage", SelectPictureInterface, Image.Converter));
 			AddMember(new NativePromise<bool, Scripting.Object>("publishImage", AddToCameraRollInterface, null));
+			AddMember(new NativePromise<Image, Scripting.Object>("selectFile", SelectFile, Image.Converter));
 		}
 
 		/**
@@ -91,7 +92,7 @@ namespace Fuse.CameraRoll
 			var Image = Image.FromObject(args[0]);
 			return AddToCameraRoll(Image);
 		}
-
+		
 		internal static Future<Image> SelectPicture()
 		{
 			var p = new Promise<Image>();
@@ -99,6 +100,14 @@ namespace Fuse.CameraRoll
 				AndroidCameraRoll.SelectPicture(p);
 			else if defined(iOS)
 				iOSCameraRoll.SelectPicture(p);
+			return p;
+		}
+		
+		internal static Future<Image> SelectFile(object[] args)
+		{
+			var p = new Promise<Image>();
+			if defined(Android)
+				AndroidCameraRoll.SelectFile(p);
 			return p;
 		}
 
