@@ -185,6 +185,14 @@ namespace Fuse.Controls
 			if (obj != _scrollable)
 				return;
 
+			debug_log "UpdateManager.FrameIndex - LastActivityFrame  => "+ (UpdateManager.FrameIndex - LastActivityFrame);
+			debug_log "prop  => "+ (prop);
+			if (UpdateManager.FrameIndex - _lastActivityPosition  < 3)
+			{
+				return;
+			}
+			// _scrollable.RemovePropertyListener(this);
+
 			if (prop == ScrollView.ScrollPositionName)
 			{
 				// debug_log "RequestCheckPosition";
@@ -197,7 +205,7 @@ namespace Fuse.Controls
 				RequestCheckSizing();
 				_lastActivitySizing = UpdateManager.FrameIndex;
 			}
-				
+			// _scrollable.AddPropertyListener(this);
 		}
 		
 		bool _pendingPosition;
@@ -205,12 +213,12 @@ namespace Fuse.Controls
 		{
 			// debug_log "_pendingPosition"+_pendingPosition;
 			// debug_log "_pendingSizing"+_pendingSizing;
-			if (!_pendingPosition && !_pendingSizing)
-			{
+			// if (!_pendingPosition && !_pendingSizing)
+			// {
 				// debug_log "UpdateManager.AddDeferredAction(CheckPosition);";
 				UpdateManager.AddDeferredAction(CheckPosition);
 				_pendingPosition = true;
-			}
+			// }
 		}
 		
 		bool _pendingSizing;
@@ -263,7 +271,7 @@ namespace Fuse.Controls
 		{
 			// debug_log "_pendingSizing "+_pendingSizing;
 			// debug_log "_scrollable "+_scrollable;
-			if (_pendingSizing || _scrollable == null)
+			if (_scrollable == null)
 				return;
 			_lastActivityPosition = UpdateManager.FrameIndex;
 			
