@@ -1,4 +1,5 @@
 using Uno;
+using Uno.IO;
 using Uno.Graphics;
 using Uno.Collections;
 using Uno.UX;
@@ -97,6 +98,7 @@ namespace Fuse.Resources
 	class HttpImageSourceImpl : LoadingImageSource
 	{
 		String _url;
+		String _filename;
 		public String Url { get { return _url; } }
 		String _contentType;
 
@@ -109,9 +111,19 @@ namespace Fuse.Resources
 		{
 			try
 			{
-				HttpLoader.LoadBinary(Url, HttpCallback, LoadFailed);
-				_loading = true;
-				OnChanged();
+				_filename = Path.Combine(Directory.GetUserDirectory(UserDirectory.Data), Url.GetHashCode() + ".jpg");
+				if (File.Exists(_filename)) {
+					var b = File.ReadAllBytes(_filename);
+					_orientation = ExifData.FromByteArray(b).Orientation;
+					_loading = true;
+					OnChanged();
+					TextureLoader.ByteArrayToTexture2DFilename(new Buffer(b), _filename, SuccessCallback);
+				}				
+				else{
+					HttpLoader.LoadBinary(Url, HttpCallback, LoadFailed);
+					_loading = true;
+					OnChanged();
+				}
 			}
 			catch( Exception e )
 			{
@@ -154,20 +166,22 @@ namespace Fuse.Resources
 
 			_orientation = ExifData.FromByteArray(data).Orientation;
 
-			new BackgroundLoad(data, _contentType, SuccessCallback, FailureCallback);
+			new BackgroundLoad(data, _filename, _contentType, SuccessCallback, FailureCallback);
 		}
 
 		class BackgroundLoad
 		{
 			byte[] _data;
 			string _contentType;
+			string _fileName;
 			Action<texture2D> _done;
 			Action<Exception> _fail;
 			Exception _exception;
-			public BackgroundLoad(byte[] data, string contentType, Action<texture2D> done, Action<Exception> fail)
+			public BackgroundLoad(byte[] data, string fileName, string contentType, Action<texture2D> done, Action<Exception> fail)
 			{
 				_data = data;
 				_contentType = contentType;
+				_fileName = fileName;
 				_done = done;
 				_fail = fail;
 
@@ -177,6 +191,8 @@ namespace Fuse.Resources
 			{
 				try
 				{
+					debug_log "_fileName : "+_fileName;
+					File.WriteAllBytes(_fileName, _data);
 					TextureLoader.ByteArrayToTexture2DContentType(new Buffer(_data), _contentType, GWDoneCallback);
 				}
 				catch (Exception e)
