@@ -185,8 +185,8 @@ namespace Fuse.Controls
 			if (obj != _scrollable)
 				return;
 
-			debug_log "UpdateManager.FrameIndex - LastActivityFrame  => "+ (UpdateManager.FrameIndex - LastActivityFrame);
-			debug_log "prop  => "+ (prop);
+			// debug_log "UpdateManager.FrameIndex - LastActivityFrame  => "+ (UpdateManager.FrameIndex - LastActivityFrame);
+			// debug_log "prop  => "+ (prop);
 			if (UpdateManager.FrameIndex - _lastActivityPosition  < 3)
 			{
 				return;
