@@ -191,7 +191,6 @@ namespace Fuse.Resources
 			{
 				try
 				{
-					debug_log "_fileName : "+_fileName;
 					File.WriteAllBytes(_fileName, _data);
 					TextureLoader.ByteArrayToTexture2DContentType(new Buffer(_data), _contentType, GWDoneCallback);
 				}
