@@ -4,6 +4,7 @@ using Uno.Compiler.ExportTargetInterop;
 using Android;
 using Fuse.ImageTools;
 using Uno.Permissions;
+
 namespace Fuse.Camera
 {
 	
@@ -20,22 +21,29 @@ namespace Fuse.Camera
 
 			Permissions.Request(permissions).Then(new TakePictureCommand(p).Execute, p.Reject);
 		}
-
-		internal static void CheckPermissions(Promise<string> p)
-		{
-			new CheckPermissionsCommand(p);
-		}
-
-		internal static void RequestPermissions(Promise<string> p)
-		{
-			new requestAndroidPermissions(p).Execute();
-		}
 	}
 
-	[ForeignInclude(Language.Java, "android.provider.MediaStore", "com.fuse.Activity", "com.fusetools.camera.Image", "android.content.Intent")]
+	[ForeignInclude(Language.Java, 
+		"android.provider.MediaStore", 
+		"com.fuse.Activity", 
+		"com.fusetools.camera.Image", 
+		"android.content.Intent", 
+		"android.net.Uri", 
+		"android.provider.MediaStore", 
+		"com.fusetools.camera.Image", 
+		"android.content.Intent", 
+		"android.support.v4.content.FileProvider", 
+		"java.io.File",
+		"java.io.IOException",
+		"java.text.SimpleDateFormat",
+		"android.os.Environment",
+		"java.util.Date"
+		)]
 	extern (Android) internal class TakePictureCommand
 	{
 		Promise<Image> _promise;
+	    static String mCurrentPhotoPath;
+
 		public TakePictureCommand(Promise<Image> promise)
 		{
 			_promise = promise;
@@ -62,22 +70,39 @@ namespace Fuse.Camera
 		[Foreign(Language.Java)]
 		static Java.Object CreateIntent(Java.Object photo)
 		@{
-			Image p = (Image)photo;
-			try {
-				Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-				intent.putExtra(MediaStore.EXTRA_OUTPUT, p.getFileUri());
-				return intent;
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
+ 			Image p = (Image)photo;
+		    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+	        // Ensure that there's a camera activity to handle the intent
+	        if (takePictureIntent.resolveActivity(com.fuse.Activity.getRootActivity().getPackageManager()) != null) {
+				File photoFile = p.getFile();
+	            if (photoFile != null) {
+	                Uri photoURI = FileProvider.getUriForFile(com.fuse.Activity.getRootActivity(),
+	                        "@(Activity.Package).fileprovider",
+	                        photoFile);
+	                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+	                return  takePictureIntent;
+	            }
+	            else
+	                return null;
+	        }
+	        return null;
 		@}
 
 		[Foreign(Language.Java)]
 		static Java.Object CreateImage()
 		@{
 			try {
-				return Image.create();
+
+		        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		        String imageFileName = "JPEG_" + timeStamp + "_";
+		        File storageDir = com.fuse.Activity.getRootActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+		        File image = File.createTempFile(
+		                imageFileName,  /* prefix */
+		                ".jpg",         /* suffix */
+		                storageDir      /* directory */
+		        );
+		        @{mCurrentPhotoPath:Set(image.getAbsolutePath())};
+				return Image.fromPath(image.getAbsolutePath());
 			} catch(Exception e) {
 				e.printStackTrace();
 				return null;
@@ -125,69 +150,6 @@ namespace Fuse.Camera
 		public void OnFail(string reason)
 		{
 			_p.Reject(new Exception(reason));
-		}
-	}
-	
-	[ForeignInclude(Language.Java, "android.provider.MediaStore", "com.fuse.Activity", "android.content.Intent", "com.fusetools.camera.Image", "com.fusetools.camera.ImageStorageTools", "android.support.v4.content.ContextCompat")]
-	extern (Android) class CheckPermissionsCommand
-	{
-		public CheckPermissionsCommand(Promise<string> p)
-		{
-			var cb = new PromiseCallback<string>(p);
-			CheckPermissionsInternal(cb.Resolve, cb.Reject);
-		}
-		
-		[Foreign(Language.Java)]
-		internal static void CheckPermissionsInternal(Action<string> onComplete, Action<string> onFail)
-		@{
-			if (ContextCompat.checkSelfPermission(com.fuse.Activity.getRootActivity(), android.Manifest.permission.READ_EXTERNAL_STORAGE) != com.fuse.Activity.getRootActivity().getPackageManager().PERMISSION_GRANTED)
-			{
-				onFail.run("User does not have permission to read");
-			}
-			else if (ContextCompat.checkSelfPermission(com.fuse.Activity.getRootActivity(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != com.fuse.Activity.getRootActivity().getPackageManager().PERMISSION_GRANTED)
-			{
-				onFail.run("User does not have permission to write");
-			}
-			else if (ContextCompat.checkSelfPermission(com.fuse.Activity.getRootActivity(), android.Manifest.permission.CAMERA) != com.fuse.Activity.getRootActivity().getPackageManager().PERMISSION_GRANTED)
-			{
-				onFail.run("User does not have permission access the camera");
-			}
-			else
-			{
-				onComplete.run("User has permission to read, write and access camera");
-			}
-		@}
-	}
-	
-	[ForeignInclude(Language.Java, "android.provider.MediaStore", "com.fuse.Activity", "android.content.Intent", "com.fusetools.camera.Image", "com.fusetools.camera.ImageStorageTools")]
-	extern (Android) class requestAndroidPermissions
-	{
-		PromiseCallback<string> _callback;
-		public requestAndroidPermissions(Promise<string> p)
-		{
-			_callback = new PromiseCallback<string>(p);
-		}
-		
-		public void Execute()
-		{
-			Permissions.Request(new PlatformPermission[] { Permissions.Android.WRITE_EXTERNAL_STORAGE, Permissions.Android.READ_EXTERNAL_STORAGE, Permissions.Android.CAMERA }).Then(OnPermissions, OnRejected);
-		}
-
-		void OnPermissions(PlatformPermission[] grantedPermissions)
-		{
-			if(grantedPermissions.Length == 3)
-			{
-				_callback.Resolve("Success");
-			}
-			else
-			{
-				_callback.Reject("Required permission was not granted.");
-			}
-		}
-
-		void OnRejected(Exception e)
-		{
-			_callback.Reject(e.Message);
 		}
 	}
 }
